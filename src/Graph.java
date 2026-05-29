@@ -22,4 +22,7 @@ public class Graph {
     public ArrayList<Edge>getEdges(){
         return edges;
     }
+    public void setVertices(HashMap<Integer, Vertex> vertices) {
+        this.vertices = vertices;
+    }
 }

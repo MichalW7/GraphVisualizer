@@ -13,32 +13,39 @@ import java.awt.event.ActionListener;
 
 public class GraphPanel extends JPanel {
     private Graph graph;
+
     private double minX;
     private double minY;
     private double maxX;
     private double maxY;
+
     private final double margin=100;
     private int vertexRadius;
+
     private HashMap<Integer,Boolean> visibleVertices;
     private HashMap<String,Boolean>visibleEdges;
+
     int mode=1;
     private int animationStep = 0;
     private int edgePosition = 0;
     private int delay=500;
     private Timer animationTimer;
+
+    private ArrayList<HashMap<Integer, Vertex>> frames;
+
+    private Timer algorithmTimer;
+    private int frameIndex = 0;
+    private int algorithmDelay = 50;
+
     public GraphPanel() {
         setBackground(Color.WHITE);
         visibleVertices = new HashMap<>();
         visibleEdges = new HashMap<>();
     }
-    public GraphPanel(Graph graph) {
-        this.graph=graph;
-        setBackground(Color.WHITE);
-        calculateBounds();
-        vertexRadius= getVertexRadius(graph);
-        visibleVertices =new HashMap<>();
-        visibleEdges=new HashMap<>();
-        setFalseVisibility();
+    public void setFrames(ArrayList<HashMap<Integer, Vertex>> frames) {
+        this.frames = frames;
+        calculateBoundsForFrames();
+        //repaint();
     }
     public void setGraph(Graph graph) {
         if (animationTimer != null) {
@@ -47,7 +54,7 @@ public class GraphPanel extends JPanel {
 
         this.graph = graph;
 
-        calculateBounds();
+
         vertexRadius = getVertexRadius(graph);
 
         visibleVertices = new HashMap<>();
@@ -74,32 +81,38 @@ public class GraphPanel extends JPanel {
         if (verticesCount <= 100) return 12;
         return 8;
     }
-    private void calculateBounds(){
-        boolean first=true;
-        for(Vertex vertex:graph.getVertices().values()){
-            if(first){
-                minY=vertex.getY();
-                maxY=vertex.getY();
-                minX=vertex.getX();
-                maxX=vertex.getX();
-                first=false;
-            }
-            double x=vertex.getX();
-            double y=vertex.getY();
-            if (x < minX) {
-                minX = x;
-            }
-            if (x > maxX) {
-                maxX = x;
-            }
-            if (y < minY) {
-                minY = y;
-            }
-            if (y > maxY) {
-                maxY = y;
+    private void calculateBoundsForFrames() {
+        boolean first = true;
+
+        for (HashMap<Integer, Vertex> frame : frames) {
+            for (Vertex vertex : frame.values()) {
+                double x = vertex.getX();
+                double y = vertex.getY();
+
+                if (first) {
+                    minX = x;
+                    maxX = x;
+                    minY = y;
+                    maxY = y;
+                    first = false;
+                } else {
+                    if (x < minX) {
+                        minX = x;
+                    }
+                    if (x > maxX) {
+                        maxX = x;
+                    }
+                    if (y < minY) {
+                        minY = y;
+                    }
+                    if (y > maxY) {
+                        maxY = y;
+                    }
+                }
             }
         }
     }
+
     private double getScale(){
         double graphWidth=maxX-minX;
         double graphHeight=maxY-minY;
@@ -174,7 +187,6 @@ public class GraphPanel extends JPanel {
     }
     public void slowDownAnimation(){
         delay += 200;
-
         if (delay > 3000) {
             delay = 3000;
         }
@@ -187,11 +199,14 @@ public class GraphPanel extends JPanel {
         if (graph == null) {
             return;
         }
-        mode = 1;
 
-        if (animationTimer != null) {
-            animationTimer.stop();
+        stopAllTimers();
+
+        if (frames != null && !frames.isEmpty()) {
+            graph.setVertices(frames.get(frames.size() - 1));
         }
+
+        mode = 1;
 
         setFalseVisibility();
 
@@ -228,6 +243,31 @@ public class GraphPanel extends JPanel {
 
         animationTimer.start();
     }
+    public void startAlgorithmAnimation(){
+        if (graph == null || frames == null || frames.isEmpty()) {
+            return;
+        }
+        stopAllTimers();
+        mode=0;
+        frameIndex=0;
+        graph.setVertices(frames.get(frameIndex));
+        repaint();
+        algorithmTimer =new Timer(algorithmDelay,new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e){
+                frameIndex++;
+                if(frameIndex>=frames.size()){
+                    algorithmTimer.stop();
+                    graph.setVertices(frames.get(frames.size()-1));
+                    repaint();
+                    return;
+                }
+                graph.setVertices(frames.get(frameIndex));
+                repaint();
+            }
+        });
+        algorithmTimer.start();
+    }
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -254,8 +294,11 @@ public class GraphPanel extends JPanel {
         if (graph == null) {
             return;
         }
-        if (animationTimer != null) {
-            animationTimer.stop();
+
+        stopAllTimers();
+
+        if (frames != null && !frames.isEmpty()) {
+            graph.setVertices(frames.get(frames.size() - 1));
         }
 
         mode = 0;
@@ -265,16 +308,25 @@ public class GraphPanel extends JPanel {
         if (graph == null) {
             return;
         }
-        if (animationTimer != null) {
-            animationTimer.stop();
-        }
+
+        stopAllTimers();
 
         mode = 1;
         setFalseVisibility();
 
         animationStep = 0;
         edgePosition = 0;
+        frameIndex = 0;
 
         repaint();
+    }
+    private void stopAllTimers() {
+        if (animationTimer != null) {
+            animationTimer.stop();
+        }
+
+        if (algorithmTimer != null) {
+            algorithmTimer.stop();
+        }
     }
 }

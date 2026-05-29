@@ -6,6 +6,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainFrame extends JFrame{
     public MainFrame(){
@@ -77,19 +79,28 @@ public class MainFrame extends JFrame{
                 try {
                     Graph graph = new Graph();
 
-                    GraphLoader.loadVertices(graph, resultFilePath);
+                    //GraphLoader.loadVertices(graph, resultFilePath);
                     GraphLoader.loadEdges(graph, inputFilePath);
+                    ArrayList<HashMap<Integer, Vertex>> frames = GraphLoader.loadFrames("animacja.txt");
+                    HashMap<Integer, Vertex> lastFrame = frames.get(frames.size() - 1);
+                    graph.setVertices(lastFrame);
 
                     System.out.println("Wczytano graf.");
-                    System.out.println("Liczba wierzcholkow: " + graph.getVertices().size());
-                    System.out.println("Liczba krawedzi: " + graph.getEdges().size());
-
                     gp.setGraph(graph);
+                    gp.setFrames(frames);
+
 
                 } catch (Exception ex) {
                     System.out.println("Wystapil blad podczas wczytywania grafu:");
                     System.out.println(ex.getMessage());
                 }
+            }
+        });
+        JButton algorithmAnimationButton = new JButton("Animuj algorytm");
+        algorithmAnimationButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                gp.startAlgorithmAnimation();
             }
         });
 
@@ -103,6 +114,7 @@ public class MainFrame extends JFrame{
         buttonPanel.add(showFullGraphButton);
         buttonPanel.add(showAnimationButton);
         buttonPanel.add(resetButton);
+        buttonPanel.add(algorithmAnimationButton);
         add(buttonPanel,BorderLayout.NORTH);
 
         add(gp,BorderLayout.CENTER);
