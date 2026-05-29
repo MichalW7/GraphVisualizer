@@ -21,7 +21,7 @@ public class MainFrame extends JFrame{
 
         JPanel buttonPanel=new JPanel();
         JButton showFullGraphButton = new JButton("Pokaz caly graf");
-        JButton showAnimationButton = new JButton("Animuj");
+        JButton showAnimationButton = new JButton("Animuj rysowanie");
         JButton resetButton = new JButton("Reset");
         showFullGraphButton.addActionListener(new ActionListener() {
             @Override
@@ -96,7 +96,7 @@ public class MainFrame extends JFrame{
                 }
             }
         });
-        JButton algorithmAnimationButton = new JButton("Animuj algorytm");
+        JButton algorithmAnimationButton = new JButton("Animuj układanie");
         algorithmAnimationButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
